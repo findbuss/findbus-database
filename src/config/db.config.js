@@ -2,7 +2,7 @@ import pkg from "pg";
 const { Pool } = pkg;
 
 const pool = new Pool({
-  user: "user", // substitua com suas credenciais
+  user: "user", 
   host: "localhost",
   database: "findbus_db",
   password: "password",
