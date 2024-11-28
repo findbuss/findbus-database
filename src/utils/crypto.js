@@ -1,7 +1,11 @@
 import { createCipheriv, createDecipheriv } from "crypto";
+import dotenv from "dotenv";
 
-const key = process.env.ENCRYPTION_KEY; 
-const iv = Buffer.alloc(16, 0); 
+dotenv.config();
+
+console.log(process.env.ENCRYPTION_KEY);
+const key = process.env.ENCRYPTION_KEY;
+const iv = Buffer.alloc(16, 0);
 
 const encrypt = (text) => {
   if (!key) {
