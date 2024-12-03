@@ -1,53 +1,26 @@
 import express from "express";
 import { compare } from "bcrypt";
 import { pool } from "../config/db.config.js";
-import { decrypt } from "../utils/crypto.js";
 
 const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { email, senha } = req.body;
-
-  if (!email || !senha) {
-    return res.status(400).json({ message: "Preencha todos os campos!" });
-  }
-
   try {
-    const query = "SELECT * FROM usuario WHERE email = $1";
-    const result = await pool.query(query, [email]);
-
+    const result = await pool.query(`SELECT * FROM usuario WHERE email = $1`, [
+      email,
+    ]);
     if (result.rows.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "Usuário inexistente, cadastre-se." });
+      return res.status(401).json({ error: "Email ou senha incorretos" });
     }
-
-    const user = result.rows[0];
-
-    const decryptedNome = decrypt(user.nome);
-    const decryptedCpf = decrypt(user.cpf);
-    const decryptedEmail = decrypt(user.email);
-    const decryptedTelefone = decrypt(user.telefone);
-
-    const isPasswordValid = await compare(senha, user.senha);
-    if (!isPasswordValid) {
-      return res
-        .status(401)
-        .json({ message: "Email ou senha estão incorretos!" });
+    const usuario = result.rows[0];
+    const senhaValida = await compare(senha, usuario.senha);
+    if (!senhaValida) {
+      return res.status(401).json({ error: "Email ou senha incorretos" });
     }
-
-    res.status(200).json({
-      message: "Login bem-sucedido!",
-      userData: {
-        decryptedNome,
-        decryptedCpf,
-        decryptedEmail,
-        decryptedTelefone,
-      },
-    });
+    res.status(200).json({ message: "Login bem-sucedido", usuario });
   } catch (error) {
-    console.error("Erro ao autenticar usuário:", error);
-    res.status(500).json({ message: "Erro ao processar o login." });
+    res.status(500).json({ error: error.message });
   }
 });
 
